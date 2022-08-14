@@ -5,7 +5,6 @@ import { DbAuthentication } from './db-authentication'
 import {
   HashComparer,
   Encrypter,
-
   AccountModel,
   AuthenticationModel
 } from './db-authentication-protocols'
