@@ -1,22 +1,14 @@
 import { LogControllerDecorator } from './log-controller-decorator'
 import { LogErrorRepository } from '@/data/protocols/db/log/log-error-repository'
-import { AccountModel } from '@/domain/models/account'
 import { ok, serverError } from '@/presentation/helpers/http/http-helper'
 import { Controller, HttpRequest, HttpResponse } from '@/presentation/protocols'
-
-const makeLogErrorRepository = (): LogErrorRepository => {
-  class LogErrorRepositoryStub implements LogErrorRepository {
-    async logError (stack: string): Promise<void> {
-      return null
-    }
-  }
-  return new LogErrorRepositoryStub()
-}
+import { mockAccountModel } from '@/domain/test'
+import { mockLogErrorRepository } from '@/data/test'
 
 const makeController = (): Controller => {
   class ControllerStub implements Controller {
     async handle (httpRequest: HttpRequest): Promise<HttpResponse> {
-      return ok(makeFakeAccount())
+      return ok(mockAccountModel())
     }
   }
   return new ControllerStub()
@@ -37,13 +29,6 @@ const makeFakeServerError = (): HttpResponse => {
   return serverError(fakerError)
 }
 
-const makeFakeAccount = (): AccountModel => ({
-  id: 'valid_id',
-  email: 'valid_email@mail.com',
-  name: 'valid_name',
-  password: 'valid_password'
-})
-
 type SutTypes = {
   sut: LogControllerDecorator
   controllerStub: Controller
@@ -51,7 +36,7 @@ type SutTypes = {
 }
 
 const makeSut = (): SutTypes => {
-  const logErrorRepositoryStub = makeLogErrorRepository()
+  const logErrorRepositoryStub = mockLogErrorRepository()
   const controllerStub = makeController()
   const sut = new LogControllerDecorator(controllerStub, logErrorRepositoryStub)
 
@@ -75,7 +60,7 @@ describe('LogController Decorator', () => {
     const { sut } = makeSut()
 
     const httpResponse = await sut.handle(makeFakeRequest())
-    expect(httpResponse).toEqual(ok(makeFakeAccount()))
+    expect(httpResponse).toEqual(ok(mockAccountModel()))
   })
 
   test('Should call LogErrorRepository with correct error if controller returns a server error', async () => {
